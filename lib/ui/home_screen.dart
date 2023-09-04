@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final response = await http.get(Uri.parse(productURl),
         headers: {"Content-Type": "application/json"});
-    List jsonResponse = json.decode(response.body);
+    List jsonResponse = json.decode(utf8.decode(response.bodyBytes));
 
     return jsonResponse.map((job) => BookModel.fromJson(job)).toList();
   }
@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final response = await http.get(Uri.parse(productURl),
         headers: {"Content-Type": "application/json"});
-    List jsonResponse = json.decode(response.body);
+    List jsonResponse = json.decode(utf8.decode(response.bodyBytes));
 
     return jsonResponse.map((job) => BookModel.fromJson(job)).toList();
   }
