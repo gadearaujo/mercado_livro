@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mercado_livro/service/model/book_model.dart';
 
@@ -5,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'config.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +42,11 @@ class _MyHomePageState extends State<MyHomePage> {
   bool? checkBoxAll = false;
   bool? checkBoxToSell = true;
 
+  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
+      GlobalKey<LiquidPullToRefreshState>();
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     super.initState();
@@ -67,189 +75,216 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(widget.title),
         centerTitle: true,
         elevation: 0.0,
       ),
       body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Material(
-                  elevation: 5,
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    color: Colors.indigo,
-                    child: Column(children: [
-                      TextFormField(
-                        style: const TextStyle(color: Colors.white),
-                        cursorColor: Colors.white,
-                        onChanged: (value) {},
-                        decoration: InputDecoration(
-                          hintText: 'Pesquisar mais livros...',
-                          icon: const Icon(
-                            Icons.search,
-                            color: Colors.white,
-                          ),
-                          contentPadding: const EdgeInsets.only(left: 10),
-                          hintStyle: const TextStyle(color: Colors.white),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(width: 1, color: Colors.white),
-                            borderRadius: BorderRadius.circular(25.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(width: 1, color: Colors.white),
-                            borderRadius: BorderRadius.circular(25.0),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      InkWell(
-                        onTap: () {
-                          showDialogFilter();
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            filter!
-                                ? Text(
-                                    'Filtros: Todos',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.4),
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 13.0,
-                                    ),
-                                  )
-                                : Container(),
-                            const Spacer(),
-                            const Text(
-                              'Filtrar',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.filter_alt_outlined,
-                              color: Colors.white,
-                            )
-                          ],
-                        ),
-                      ),
-                    ]),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Divider(
+        child: LiquidPullToRefresh(
+          key: _refreshIndicatorKey, // key if you want to add
+          onRefresh: _handleRefresh, // refresh callback
+          child: SingleChildScrollView(
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: <
+                    Widget>[
+              Material(
+                elevation: 5,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
                   color: Colors.indigo,
-                  indent: 20.0,
-                  endIndent: 20.0,
+                  child: Column(children: [
+                    TextFormField(
+                      style: const TextStyle(color: Colors.white),
+                      cursorColor: Colors.white,
+                      onChanged: (value) {},
+                      decoration: InputDecoration(
+                        hintText: 'Pesquisar mais livros...',
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ),
+                        contentPadding: const EdgeInsets.only(left: 10),
+                        hintStyle: const TextStyle(color: Colors.white),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(width: 1, color: Colors.white),
+                          borderRadius: BorderRadius.circular(25.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(width: 1, color: Colors.white),
+                          borderRadius: BorderRadius.circular(25.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        showDialogFilter();
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          filter!
+                              ? Text(
+                                  'Filtros: Todos',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.4),
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 13.0,
+                                  ),
+                                )
+                              : Container(),
+                          const Spacer(),
+                          const Text(
+                            'Filtrar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.filter_alt_outlined,
+                            color: Colors.white,
+                          )
+                        ],
+                      ),
+                    ),
+                  ]),
                 ),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.8,
-                  child: FutureBuilder<List<BookModel>>(
-                    future: filter! ? getAllBookList() : getBookList(),
-                    builder: (context, snapshot) {
-                      // ignore: unrelated_type_equality_checks
-                      if (snapshot.inState(ConnectionState.waiting) == true) {
-                        return const Center(
-                          child: CircularProgressIndicator(color: Colors.black),
-                        );
-                      } else if (snapshot.hasData) {
-                        return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: GridView.builder(
-                                itemCount: snapshot.data!.length,
-                                padding: const EdgeInsets.only(top: 8.0),
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                ),
-                                itemBuilder: (BuildContext context, int i) {
-                                  return Card(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                              width: 0.5, color: Colors.grey)),
-                                      child: Padding(
-                                        padding: EdgeInsets.only(
-                                            top: filter! ? 0.0 : 8.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                            Text(
-                                              snapshot.data![i].name!,
-                                              style: const TextStyle(
-                                                color: Colors.indigo,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Divider(
+                color: Colors.indigo,
+                indent: 20.0,
+                endIndent: 20.0,
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: FutureBuilder<List<BookModel>>(
+                  future: filter! ? getAllBookList() : getBookList(),
+                  builder: (context, snapshot) {
+                    // ignore: unrelated_type_equality_checks
+                    if (snapshot.inState(ConnectionState.waiting) == true) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Colors.black),
+                      );
+                    } else if (snapshot.hasData) {
+                      return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GridView.builder(
+                              itemCount: snapshot.data!.length,
+                              padding: const EdgeInsets.only(top: 8.0),
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                              ),
+                              itemBuilder: (BuildContext context, int i) {
+                                return Card(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                            width: 0.5, color: Colors.grey)),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                          top: filter! ? 0.0 : 8.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text(
+                                            snapshot.data![i].name!,
+                                            style: const TextStyle(
+                                              color: Colors.indigo,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            Text(
-                                              'R\$ ${snapshot.data![i].price!.toString()}',
-                                              style: const TextStyle(
-                                                color: Colors.indigo,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                          ),
+                                          Text(
+                                            'R\$ ${snapshot.data![i].price!.toString()}',
+                                            style: const TextStyle(
+                                              color: Colors.indigo,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            const Spacer(),
-                                            Image.network(
-                                              'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000',
-                                              fit: BoxFit.fill,
-                                            ),
-                                            filter!
-                                                ? Container(
-                                                    alignment: Alignment.center,
-                                                    color: snapshot
-                                                            .data![i].status!
-                                                            .contains('VENDIDO')
-                                                        ? Colors.yellow
-                                                        : snapshot.data![i]
+                                          ),
+                                          const Spacer(),
+                                          Image.network(
+                                            'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000',
+                                            fit: BoxFit.fill,
+                                          ),
+                                          filter!
+                                              ? Container(
+                                                  alignment: Alignment.center,
+                                                  color: snapshot
+                                                          .data![i].status!
+                                                          .contains('VENDIDO')
+                                                      ? Colors.yellow
+                                                      : snapshot
+                                                              .data![i].status!
+                                                              .contains(
+                                                                  'CANCELADO')
+                                                          ? Colors.red
+                                                          : Colors.green,
+                                                  height: 20,
+                                                  child: Text(
+                                                    snapshot.data![i].status!,
+                                                    style: TextStyle(
+                                                        color: snapshot.data![i]
                                                                 .status!
                                                                 .contains(
-                                                                    'CANCELADO')
-                                                            ? Colors.red
-                                                            : Colors.green,
-                                                    height: 20,
-                                                    child: Text(
-                                                      snapshot.data![i].status!,
-                                                      style: TextStyle(
-                                                          color: snapshot
-                                                                  .data![i]
-                                                                  .status!
-                                                                  .contains(
-                                                                      'VENDIDO')
-                                                              ? Colors.black
-                                                              : Colors.white),
-                                                    ),
-                                                  )
-                                                : Container()
-                                          ],
-                                        ),
+                                                                    'VENDIDO')
+                                                            ? Colors.black
+                                                            : Colors.white),
+                                                  ),
+                                                )
+                                              : Container()
+                                        ],
                                       ),
                                     ),
-                                  );
-                                }));
-                      } else if (snapshot.hasError) {
-                        return const Text("Erro ao conectar no banco.");
-                      } else {
-                        return Container();
-                      }
-                    },
-                  ),
+                                  ),
+                                );
+                              }));
+                    } else if (snapshot.hasError) {
+                      return const Text("Erro ao conectar no banco.");
+                    } else {
+                      return Container();
+                    }
+                  },
                 ),
-              ]),
+              ),
+            ]),
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleRefresh() {
+    final Completer<void> completer = Completer<void>();
+
+    Timer(const Duration(seconds: 1), () {
+      completer.complete();
+    });
+    setState(() {});
+    return completer.future.then<void>((_) {
+      ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
+        SnackBar(
+          content: const Text('Livros atualizados'),
+          action: SnackBarAction(
+            label: 'Repetir',
+            textColor: Colors.white,
+            onPressed: () {
+              _refreshIndicatorKey.currentState!.show();
+            },
+          ),
+        ),
+      );
+    });
   }
 
   void showDialogFilter() {
