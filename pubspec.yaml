@@ -29,3 +29,11 @@ flutter:
 
   assets: 
     - assets/
+
+  fonts:
+    - family: Sono
+      fonts:
+        - asset: fonts/Sono.ttf
+    - family: Kanit-Regular
+      fonts:
+        - asset: fonts/Kanit-Regular.ttf

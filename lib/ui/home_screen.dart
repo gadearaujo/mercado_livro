@@ -39,7 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: const Text('Mercado Livro'),
+          title: const Text(
+            'Mercado Livro',
+            style: TextStyle(fontFamily: 'Sono', fontWeight: FontWeight.bold),
+          ),
           centerTitle: true,
           elevation: 0.0,
         ),

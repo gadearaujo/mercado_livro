@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'Mercado Livro',
       theme: ThemeData(
         primarySwatch: Colors.indigo,
+        fontFamily: 'Kanit-Regular',
       ),
       home: const HomeScreen(),
     );
