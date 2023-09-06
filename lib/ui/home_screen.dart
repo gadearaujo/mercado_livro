@@ -566,45 +566,98 @@ class Page4 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Center(
-          child: SingleChildScrollView(
-        child: Column(children: [
-          const Text(
-            'Criar conta',
-            style: TextStyle(
-              color: Colors.indigo,
-              fontSize: 45,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(
-            height: 120,
-          ),
-          TextFormField(
-            decoration: const InputDecoration(
-              filled: true,
-              hintText: 'Email',
-              fillColor: Colors.indigo,
-              hintStyle: TextStyle(
-                color: Colors.white,
+      child: SingleChildScrollView(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 60,
               ),
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          TextFormField(
-            decoration: const InputDecoration(
-              filled: true,
-              hintText: 'Senha',
-              fillColor: Colors.indigo,
-              hintStyle: TextStyle(
-                color: Colors.white,
+              const Text(
+                'Criar conta',
+                style: TextStyle(
+                  color: Colors.indigo,
+                  fontSize: 45,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ),
-        ]),
-      )),
+              Image.asset(
+                'assets/login-image.webp',
+                height: 250,
+                width: 250,
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+              TextFormField(
+                decoration: const InputDecoration(
+                  filled: true,
+                  hintText: 'Email',
+                  fillColor: Colors.indigo,
+                  hintStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration: const InputDecoration(
+                  filled: true,
+                  hintText: 'Senha',
+                  fillColor: Colors.indigo,
+                  hintStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Container(
+                height: 50.0,
+                margin: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ButtonStyle(
+                      shape: MaterialStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            50.0,
+                          ),
+                        ),
+                      ),
+                      padding: const MaterialStatePropertyAll(
+                        EdgeInsets.all(0.0),
+                      )),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                            colors: [
+                              Colors.indigo,
+                              Color.fromARGB(255, 5, 22, 137)
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            tileMode: TileMode.repeated),
+                        borderRadius: BorderRadius.circular(30.0)),
+                    child: Container(
+                      constraints: const BoxConstraints(
+                          maxWidth: 250.0, minHeight: 50.0),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "Registrar",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white, fontSize: 15),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ]),
+      ),
     );
   }
 }
