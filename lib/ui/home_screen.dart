@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
               endIndent: 20.0,
             ),
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
+              height: MediaQuery.of(context).size.height,
               child: FutureBuilder<List<BookModel>>(
                 future: filter! ? getAllBookList() : getBookList(),
                 builder: (context, snapshot) {
@@ -330,65 +330,90 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         const Spacer(),
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.only(
-                                              bottomLeft: Radius.circular(
-                                                  filter! ? 0 : 20),
-                                              bottomRight: Radius.circular(
-                                                  filter! ? 0 : 20)),
-                                          child: Image.network(
-                                            snapshot.data![i].photoUrl ==
-                                                        null ||
-                                                    snapshot.data![i].photoUrl!
-                                                        .isEmpty
-                                                ? 'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
-                                                : snapshot.data![i].photoUrl!,
-                                            fit: BoxFit.fill,
-                                            height: 130,
-                                          ),
-                                        ),
-                                        filter!
-                                            ? Container(
-                                                decoration: BoxDecoration(
-                                                  color: snapshot
-                                                          .data![i].status!
-                                                          .contains('VENDIDO')
-                                                      ? Colors.yellow
-                                                      : snapshot
-                                                              .data![i].status!
-                                                              .contains(
-                                                                  'CANCELADO')
-                                                          ? Colors.red
-                                                          : snapshot.data![i]
-                                                                  .status!
-                                                                  .contains(
-                                                                      'DELETADO')
-                                                              ? Colors.blue
-                                                              : Colors.green,
-                                                  borderRadius:
-                                                      const BorderRadius.only(
-                                                    bottomLeft:
-                                                        Radius.circular(20),
-                                                    bottomRight:
-                                                        Radius.circular(
-                                                      20,
+                                        Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                      bottomLeft:
+                                                          Radius.circular(20),
+                                                      bottomRight:
+                                                          Radius.circular(20)),
+                                              child: Image.network(
+                                                snapshot.data![i].photoUrl ==
+                                                            null ||
+                                                        snapshot.data![i]
+                                                            .photoUrl!.isEmpty
+                                                    ? 'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
+                                                    : snapshot
+                                                        .data![i].photoUrl!,
+                                                fit: BoxFit.cover,
+                                                height: 120,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    2.2,
+                                              ),
+                                            ),
+                                            filter!
+                                                ? Positioned(
+                                                    bottom: 0,
+                                                    right: 0,
+                                                    left: 0,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: snapshot.data![i]
+                                                                .status!
+                                                                .contains(
+                                                                    'VENDIDO')
+                                                            ? Colors.yellow
+                                                            : snapshot.data![i]
+                                                                    .status!
+                                                                    .contains(
+                                                                        'CANCELADO')
+                                                                ? Colors.red
+                                                                : snapshot
+                                                                        .data![
+                                                                            i]
+                                                                        .status!
+                                                                        .contains(
+                                                                            'DELETADO')
+                                                                    ? Colors
+                                                                        .blue
+                                                                    : Colors
+                                                                        .green,
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .only(
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                  20),
+                                                          bottomRight:
+                                                              Radius.circular(
+                                                            20,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      alignment:
+                                                          Alignment.center,
+                                                      height: 20,
+                                                      child: Text(
+                                                        snapshot
+                                                            .data![i].status!,
+                                                        style: TextStyle(
+                                                            color: snapshot
+                                                                    .data![i]
+                                                                    .status!
+                                                                    .contains(
+                                                                        'VENDIDO')
+                                                                ? Colors.black
+                                                                : Colors.white),
+                                                      ),
                                                     ),
-                                                  ),
-                                                ),
-                                                alignment: Alignment.center,
-                                                height: 20,
-                                                child: Text(
-                                                  snapshot.data![i].status!,
-                                                  style: TextStyle(
-                                                      color: snapshot
-                                                              .data![i].status!
-                                                              .contains(
-                                                                  'VENDIDO')
-                                                          ? Colors.black
-                                                          : Colors.white),
-                                                ),
-                                              )
-                                            : Container()
+                                                  )
+                                                : Container()
+                                          ],
+                                        )
                                       ],
                                     ),
                                   ),
@@ -605,6 +630,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 40,
               ),
               TextFormField(
+                textInputAction: TextInputAction.next,
+                style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   filled: true,
                   hintText: 'Email',
@@ -618,6 +645,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 20,
               ),
               TextFormField(
+                style: const TextStyle(color: Colors.white),
+                obscureText: true,
                 decoration: const InputDecoration(
                   filled: true,
                   hintText: 'Senha',
