@@ -19,143 +19,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool? filter = false;
-  bool? checkBoxAll = false;
-  bool? checkBoxToSell = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int pageIndex = 0;
 
-  final pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-    const Page4(),
-  ];
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          title: const Text(
-            'Mercado Livro',
-            style: TextStyle(fontFamily: 'Sono', fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-          elevation: 0.0,
-        ),
-        bottomNavigationBar: buildMyNavBar(context),
-        body: pages[pageIndex]);
-  }
-
-  Container buildMyNavBar(BuildContext context) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                pageIndex = 0;
-              });
-            },
-            icon: pageIndex == 0
-                ? const Icon(
-                    Icons.home_filled,
-                    color: Colors.white,
-                    size: 35,
-                  )
-                : const Icon(
-                    Icons.home_outlined,
-                    color: Colors.white,
-                    size: 35,
-                  ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                pageIndex = 1;
-              });
-            },
-            icon: pageIndex == 1
-                ? const Icon(
-                    Icons.shopping_basket,
-                    color: Colors.white,
-                    size: 35,
-                  )
-                : const Icon(
-                    Icons.shopping_basket_outlined,
-                    color: Colors.white,
-                    size: 35,
-                  ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                pageIndex = 2;
-              });
-            },
-            icon: pageIndex == 2
-                ? const Icon(
-                    Icons.add_box_rounded,
-                    color: Colors.white,
-                    size: 35,
-                  )
-                : const Icon(
-                    Icons.add_box_outlined,
-                    color: Colors.white,
-                    size: 35,
-                  ),
-          ),
-          IconButton(
-            enableFeedback: false,
-            onPressed: () {
-              setState(() {
-                pageIndex = 3;
-              });
-            },
-            icon: pageIndex == 3
-                ? const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 35,
-                  )
-                : const Icon(
-                    Icons.person_outline,
-                    color: Colors.white,
-                    size: 35,
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class Page1 extends StatefulWidget {
-  const Page1({super.key});
-  @override
-  State<Page1> createState() => _Page1State();
-}
-
-class _Page1State extends State<Page1> {
   final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
       GlobalKey<LiquidPullToRefreshState>();
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool? filter = false;
   bool? checkBoxAll = false;
@@ -297,6 +166,27 @@ class _Page1State extends State<Page1> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: const Text(
+            'Mercado Livro',
+            style: TextStyle(fontFamily: 'Sono', fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          elevation: 0.0,
+        ),
+        bottomNavigationBar: buildMyNavBar(context),
+        body: pageIndex == 0
+            ? homePage()
+            : pageIndex == 1
+                ? shopping()
+                : pageIndex == 2
+                    ? publishBook()
+                    : registerPage());
+  }
+
+  Widget homePage() {
     return Center(
       child: LiquidPullToRefresh(
         key: _refreshIndicatorKey, // key if you want to add
@@ -518,55 +408,176 @@ class _Page1State extends State<Page1> {
       ),
     );
   }
-}
 
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 2",
-          style: TextStyle(
-            color: Colors.green[900],
-            fontSize: 45,
-            fontWeight: FontWeight.w500,
-          ),
+  Widget shopping() {
+    return SingleChildScrollView(
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height - 140,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Text(
+              "Carrinho",
+              style: TextStyle(
+                color: Colors.indigo,
+                fontSize: 30,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                children: [
+                  const Text(
+                    'R\$ 0.00',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      '   Itens: 0   ',
+                      style: TextStyle(fontSize: 17),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            Container(
+              height: 60.0,
+              margin: const EdgeInsets.all(10),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {});
+                },
+                style: ButtonStyle(
+                    elevation: const MaterialStatePropertyAll(10),
+                    shape: MaterialStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          10.0,
+                        ),
+                      ),
+                    ),
+                    padding: const MaterialStatePropertyAll(
+                      EdgeInsets.all(0.0),
+                    )),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 52, 52, 52),
+                          Color.fromARGB(255, 29, 29, 29)
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        tileMode: TileMode.repeated),
+                    borderRadius: BorderRadius.circular(
+                      10.0,
+                    ),
+                  ),
+                  child: Container(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width - 20,
+                        minHeight: 50.0),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "PAGAMENTO",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xffC4DFCB),
-      child: Center(
-        child: Text(
-          "Page Number 3",
+  Widget publishBook() {
+    return Center(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          "Publicar livro",
           style: TextStyle(
-            color: Colors.green[900],
-            fontSize: 45,
+            color: Colors.indigo,
+            fontSize: 30,
             fontWeight: FontWeight.w500,
           ),
         ),
-      ),
-    );
+        const Text(
+          "Para isso, você precisa se registrar.",
+          style: TextStyle(
+            color: Colors.indigo,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Container(
+          height: 50.0,
+          margin: const EdgeInsets.all(10),
+          child: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                pageIndex = 3;
+              });
+            },
+            style: ButtonStyle(
+                shape: MaterialStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      50.0,
+                    ),
+                  ),
+                ),
+                padding: const MaterialStatePropertyAll(
+                  EdgeInsets.all(0.0),
+                )),
+            child: Ink(
+              decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                      colors: [Colors.indigo, Color.fromARGB(255, 5, 22, 137)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      tileMode: TileMode.repeated),
+                  borderRadius: BorderRadius.circular(30.0)),
+              child: Container(
+                constraints:
+                    const BoxConstraints(maxWidth: 250.0, minHeight: 50.0),
+                alignment: Alignment.center,
+                child: const Text(
+                  "Registrar",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontSize: 15),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ));
   }
-}
 
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget registerPage() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SingleChildScrollView(
@@ -660,6 +671,100 @@ class Page4 extends StatelessWidget {
                 ),
               ),
             ]),
+      ),
+    );
+  }
+
+  Container buildMyNavBar(BuildContext context) {
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                pageIndex = 0;
+              });
+            },
+            icon: pageIndex == 0
+                ? const Icon(
+                    Icons.home_filled,
+                    color: Colors.white,
+                    size: 35,
+                  )
+                : const Icon(
+                    Icons.home_outlined,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+          ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                pageIndex = 1;
+              });
+            },
+            icon: pageIndex == 1
+                ? const Icon(
+                    Icons.shopping_basket,
+                    color: Colors.white,
+                    size: 35,
+                  )
+                : const Icon(
+                    Icons.shopping_basket_outlined,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+          ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                pageIndex = 2;
+              });
+            },
+            icon: pageIndex == 2
+                ? const Icon(
+                    Icons.add_box_rounded,
+                    color: Colors.white,
+                    size: 35,
+                  )
+                : const Icon(
+                    Icons.add_box_outlined,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+          ),
+          IconButton(
+            enableFeedback: false,
+            onPressed: () {
+              setState(() {
+                pageIndex = 3;
+              });
+            },
+            icon: pageIndex == 3
+                ? const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 35,
+                  )
+                : const Icon(
+                    Icons.person_outline,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+          ),
+        ],
       ),
     );
   }
