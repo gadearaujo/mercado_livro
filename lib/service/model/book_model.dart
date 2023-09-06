@@ -1,6 +1,3 @@
-import 'book_status.dart';
-import 'customer_model.dart';
-
 class BookModel {
   final int? id;
 
@@ -10,7 +7,7 @@ class BookModel {
 
   final String? status;
 
-  final CustomerModel? customerId;
+  final Map? customer;
 
   final String? photoUrl;
 
@@ -19,7 +16,7 @@ class BookModel {
       this.name,
       this.price,
       this.status,
-      this.customerId,
+      this.customer,
       this.photoUrl});
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +26,6 @@ class BookModel {
         price: json['price'],
         status: json['status'],
         photoUrl: json['photoUrl'],
-        customerId: json['customer_id']);
+        customer: json['customer']);
   }
 }

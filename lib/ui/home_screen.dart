@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mercado_livro/service/model/book_model.dart';
 
+// ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// ignore: depend_on_referenced_packages
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 import '../config.dart';
-import '../service/model/book_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? filter = false;
   bool? checkBoxAll = false;
   bool? checkBoxToSell = true;
+
+  double _crossAxisSpacing = 8, _mainAxisSpacing = 12, _aspectRatio = 2;
+  int _crossAxisCount = 2;
 
   Future<List<BookModel>> getBookList() async {
     String productURl = '$SERVER_URL/book/active';
@@ -187,112 +191,120 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget homePage() {
-    return Center(
-      child: LiquidPullToRefresh(
-        key: _refreshIndicatorKey, // key if you want to add
-        onRefresh: _handleRefresh, // refresh callback
-        child: SingleChildScrollView(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <
-              Widget>[
-            Material(
-              elevation: 5,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                color: Colors.indigo,
-                child: Column(children: [
-                  TextFormField(
-                    style: const TextStyle(color: Colors.white),
-                    cursorColor: Colors.white,
-                    onChanged: (value) {},
-                    decoration: InputDecoration(
-                      hintText: 'Pesquisar mais livros...',
-                      icon: const Icon(
-                        Icons.search,
-                        color: Colors.white,
-                      ),
-                      contentPadding: const EdgeInsets.only(left: 10),
-                      hintStyle: const TextStyle(color: Colors.white),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(width: 1, color: Colors.white),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(width: 1, color: Colors.white),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      showDialogFilter();
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        filter!
-                            ? Text(
-                                'Filtros: Todos',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.4),
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 13.0,
-                                ),
-                              )
-                            : Container(),
-                        const Spacer(),
-                        const Text(
-                          'Filtrar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        const Icon(
-                          Icons.filter_alt_outlined,
-                          color: Colors.white,
-                        )
-                      ],
-                    ),
-                  ),
-                ]),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Divider(
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    var width = (screenWidth - ((_crossAxisCount - 1) * _crossAxisSpacing)) /
+        _crossAxisCount;
+    var height = width / _aspectRatio;
+    return LiquidPullToRefresh(
+      key: _refreshIndicatorKey, // key if you want to add
+      onRefresh: _handleRefresh, // refresh callback
+      child: SingleChildScrollView(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <
+            Widget>[
+          Material(
+            elevation: 5,
+            child: Container(
+              padding: const EdgeInsets.all(20),
               color: Colors.indigo,
-              indent: 20.0,
-              endIndent: 20.0,
+              child: Column(children: [
+                TextFormField(
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: Colors.white,
+                  onChanged: (value) {},
+                  decoration: InputDecoration(
+                    hintText: 'Pesquisar mais livros...',
+                    icon: const Icon(
+                      Icons.search,
+                      color: Colors.white,
+                    ),
+                    contentPadding: const EdgeInsets.only(left: 10),
+                    hintStyle: const TextStyle(color: Colors.white),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(width: 1, color: Colors.white),
+                      borderRadius: BorderRadius.circular(25.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(width: 1, color: Colors.white),
+                      borderRadius: BorderRadius.circular(25.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                InkWell(
+                  onTap: () {
+                    showDialogFilter();
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      filter!
+                          ? Text(
+                              'Filtros: Todos',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.4),
+                                fontWeight: FontWeight.normal,
+                                fontSize: 13.0,
+                              ),
+                            )
+                          : Container(),
+                      const Spacer(),
+                      const Text(
+                        'Filtrar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.filter_alt_outlined,
+                        color: Colors.white,
+                      )
+                    ],
+                  ),
+                ),
+              ]),
             ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height,
-              child: FutureBuilder<List<BookModel>>(
-                future: filter! ? getAllBookList() : getBookList(),
-                builder: (context, snapshot) {
-                  // ignore: unrelated_type_equality_checks
-                  if (snapshot.inState(ConnectionState.waiting) == true) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.black),
-                    );
-                  } else if (snapshot.hasData) {
-                    return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GridView.builder(
-                            itemCount: snapshot.data!.length,
-                            padding: const EdgeInsets.only(top: 8.0),
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                            ),
-                            itemBuilder: (BuildContext context, int i) {
-                              return Card(
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          const Divider(
+            color: Colors.indigo,
+            indent: 20.0,
+            endIndent: 20.0,
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height - 300,
+            width: MediaQuery.of(context).size.width,
+            child: FutureBuilder<List<BookModel>>(
+              future: filter! ? getAllBookList() : getBookList(),
+              builder: (context, snapshot) {
+                // ignore: unrelated_type_equality_checks
+                if (snapshot.inState(ConnectionState.waiting) == true) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.black),
+                  );
+                } else if (snapshot.hasData) {
+                  return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GridView.builder(
+                          itemCount: snapshot.data!.length,
+                          padding: const EdgeInsets.only(top: 8.0),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 5,
+                            childAspectRatio: _aspectRatio / 2.5,
+                          ),
+                          itemBuilder: (BuildContext context, int i) {
+                            return Card(
                                 shape: RoundedRectangleBorder(
                                   side: const BorderSide(
                                     color: Colors.indigo,
@@ -313,8 +325,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: EdgeInsets.only(
                                         top: filter! ? 0.0 : 8.0),
                                     child: Column(
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisSize: MainAxisSize.max,
                                       children: <Widget>[
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
                                         Text(
                                           snapshot.data![i].name!,
                                           style: const TextStyle(
@@ -330,6 +345,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         const Spacer(),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            const SizedBox(
+                                              width: 10,
+                                            ),
+                                            snapshot.data![i].customer == null
+                                                ? const Text('',
+                                                    style: TextStyle(
+                                                        color: Colors.black))
+                                                : Text(
+                                                    'Por: ${snapshot.data![i].customer!['name']}',
+                                                    style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 12,
+                                                    )),
+                                          ],
+                                        ),
                                         Stack(
                                           children: [
                                             ClipRRect(
@@ -348,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     : snapshot
                                                         .data![i].photoUrl!,
                                                 fit: BoxFit.cover,
-                                                height: 120,
+                                                height: 160,
                                                 width: MediaQuery.of(context)
                                                         .size
                                                         .width /
@@ -417,19 +451,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   ),
-                                ),
-                              );
-                            }));
-                  } else if (snapshot.hasError) {
-                    return const Text("Erro ao conectar no banco.");
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
+                                ));
+                          }));
+                } else if (snapshot.hasError) {
+                  return const Text("Erro ao conectar no banco.");
+                } else {
+                  return Container();
+                }
+              },
             ),
-          ]),
-        ),
+          ),
+        ]),
       ),
     );
   }
