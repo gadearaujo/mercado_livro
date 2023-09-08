@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import '../config.dart';
 
 class Service {
-  Future<ApiResponse> getBooks() async {
+  Future<ApiResponse> getBooks(bool active) async {
     ApiResponse _apiResponse = ApiResponse();
 
     try {
@@ -17,7 +17,8 @@ class Service {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Accept'
       };
-      var request = http.Request('GET', Uri.parse('$SERVER_URL/book'));
+      var request = http.Request('GET',
+          Uri.parse(active ? '$SERVER_URL/book/active' : '$SERVER_URL/book'));
 
       request.headers.addAll(headers);
 

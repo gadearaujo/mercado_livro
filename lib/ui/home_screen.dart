@@ -10,7 +10,8 @@ import 'dart:convert';
 // ignore: depend_on_referenced_packages
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
-import '../config.dart';
+import '../service/response/api_response.dart';
+import '../service/service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,27 +32,37 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? checkBoxAll = false;
   bool? checkBoxToSell = true;
 
+  List? dataFromResponse;
+
+  BookModel? allBooks;
+
+  ApiResponse _apiResponse = ApiResponse();
+  final _service = Service();
+
   double _crossAxisSpacing = 8, _mainAxisSpacing = 12, _aspectRatio = 2;
   int _crossAxisCount = 2;
 
-  Future<List<BookModel>> getBookList() async {
-    String productURl = '$SERVER_URL/book/active';
+  @override
+  void initState() {
+    super.initState();
 
-    final response = await http.get(Uri.parse(productURl),
-        headers: {"Content-Type": "application/json"});
-    List jsonResponse = json.decode(utf8.decode(response.bodyBytes));
-
-    return jsonResponse.map((job) => BookModel.fromJson(job)).toList();
+    getBookList();
   }
 
-  Future<List<BookModel>> getAllBookList() async {
-    String productURl = '$SERVER_URL/book';
+  void getBookList() async {
+    _apiResponse = await _service.getBooks(true);
 
-    final response = await http.get(Uri.parse(productURl),
-        headers: {"Content-Type": "application/json"});
-    List jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+    setState(() {
+      allBooks = _apiResponse.book!;
+    });
+  }
 
-    return jsonResponse.map((job) => BookModel.fromJson(job)).toList();
+  void getAllBookList() async {
+    _apiResponse = await _service.getBooks(false);
+
+    setState(() {
+      allBooks = _apiResponse.book!;
+    });
   }
 
   Future<void> _handleRefresh() {
@@ -145,8 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     setStateDialog(() {
                       if (checkBoxAll!) {
                         filter = true;
+                        getAllBookList();
                       } else {
                         filter = false;
+                        getBookList();
                       }
                       Navigator.pop(context);
                       setState(() {});
@@ -200,268 +213,257 @@ class _HomeScreenState extends State<HomeScreen> {
       key: _refreshIndicatorKey, // key if you want to add
       onRefresh: _handleRefresh, // refresh callback
       child: SingleChildScrollView(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <
-            Widget>[
-          Material(
-            elevation: 5,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              color: Colors.indigo,
-              child: Column(children: [
-                TextFormField(
-                  style: const TextStyle(color: Colors.white),
-                  cursorColor: Colors.white,
-                  onChanged: (value) {},
-                  decoration: InputDecoration(
-                    hintText: 'Pesquisar mais livros...',
-                    icon: const Icon(
-                      Icons.search,
-                      color: Colors.white,
-                    ),
-                    contentPadding: const EdgeInsets.only(left: 10),
-                    hintStyle: const TextStyle(color: Colors.white),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(width: 1, color: Colors.white),
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(width: 1, color: Colors.white),
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                InkWell(
-                  onTap: () {
-                    showDialogFilter();
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      filter!
-                          ? Text(
-                              'Filtros: Todos',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.4),
-                                fontWeight: FontWeight.normal,
-                                fontSize: 13.0,
-                              ),
-                            )
-                          : Container(),
-                      const Spacer(),
-                      const Text(
-                        'Filtrar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.filter_alt_outlined,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Material(
+              elevation: 5,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                color: Colors.indigo,
+                child: Column(children: [
+                  TextFormField(
+                    style: const TextStyle(color: Colors.white),
+                    cursorColor: Colors.white,
+                    onChanged: (value) {},
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar mais livros...',
+                      icon: const Icon(
+                        Icons.search,
                         color: Colors.white,
-                      )
-                    ],
+                      ),
+                      contentPadding: const EdgeInsets.only(left: 10),
+                      hintStyle: const TextStyle(color: Colors.white),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(width: 1, color: Colors.white),
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(width: 1, color: Colors.white),
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
+                    ),
                   ),
-                ),
-              ]),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  InkWell(
+                    onTap: () {
+                      showDialogFilter();
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        filter!
+                            ? Text(
+                                'Filtros: Todos',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.4),
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 13.0,
+                                ),
+                              )
+                            : Container(),
+                        const Spacer(),
+                        const Text(
+                          'Filtrar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.filter_alt_outlined,
+                          color: Colors.white,
+                        )
+                      ],
+                    ),
+                  ),
+                ]),
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          const Divider(
-            color: Colors.indigo,
-            indent: 20.0,
-            endIndent: 20.0,
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 300,
-            width: MediaQuery.of(context).size.width,
-            child: FutureBuilder<List<BookModel>>(
-              future: filter! ? getAllBookList() : getBookList(),
-              builder: (context, snapshot) {
-                // ignore: unrelated_type_equality_checks
-                if (snapshot.inState(ConnectionState.waiting) == true) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: Colors.black),
-                  );
-                } else if (snapshot.hasData) {
-                  return Padding(
+            const SizedBox(
+              height: 10,
+            ),
+            const Divider(
+              color: Colors.indigo,
+              indent: 20.0,
+              endIndent: 20.0,
+            ),
+            _apiResponse == null
+                ? const Center(child: CircularProgressIndicator())
+                : SizedBox(
+                    height: MediaQuery.of(context).size.height - 300,
+                    width: MediaQuery.of(context).size.width,
+                    child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: GridView.builder(
-                          itemCount: snapshot.data!.length,
-                          padding: const EdgeInsets.only(top: 8.0),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 5,
-                            mainAxisSpacing: 5,
-                            childAspectRatio: _aspectRatio / 2.5,
-                          ),
-                          itemBuilder: (BuildContext context, int i) {
-                            return Card(
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(
-                                    color: Colors.indigo,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20.0),
+                        itemCount:
+                            allBooks == null ? 0 : allBooks!.data!.length,
+                        padding: const EdgeInsets.only(top: 8.0),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                          childAspectRatio: _aspectRatio / 2.5,
+                        ),
+                        itemBuilder: (BuildContext context, int i) {
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(
+                                color: Colors.indigo,
+                              ),
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  width: 0.5,
+                                  color: Colors.grey,
                                 ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      width: 0.5,
-                                      color: Colors.grey,
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(20),
+                                ),
+                              ),
+                              child: Padding(
+                                padding:
+                                    EdgeInsets.only(top: filter! ? 0.0 : 8.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: <Widget>[
+                                    const SizedBox(
+                                      height: 5,
                                     ),
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(20),
+                                    Text(
+                                      utf8.decode(allBooks!.data![i]["name"]
+                                          .toString()
+                                          .codeUnits),
+                                      style: const TextStyle(
+                                        color: Colors.indigo,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                        top: filter! ? 0.0 : 8.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: <Widget>[
+                                    Text(
+                                      'R\$ ${allBooks!.data![i]["price"].toString()}',
+                                      style: const TextStyle(
+                                        color: Colors.indigo,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
                                         const SizedBox(
-                                          height: 5,
+                                          width: 10,
                                         ),
-                                        Text(
-                                          snapshot.data![i].name!,
-                                          style: const TextStyle(
-                                            color: Colors.indigo,
-                                            fontWeight: FontWeight.bold,
+                                        allBooks!.data![i]['customer'] == null
+                                            ? const Text('',
+                                                style: TextStyle(
+                                                    color: Colors.black))
+                                            : Text(
+                                                'Por: ${allBooks!.data![i]["customer"]["name"]}',
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 12,
+                                                )),
+                                      ],
+                                    ),
+                                    Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: const BorderRadius.only(
+                                              bottomLeft: Radius.circular(20),
+                                              bottomRight: Radius.circular(20)),
+                                          child: Image.network(
+                                            allBooks!.data![i]["photoUrl"] ==
+                                                        null ||
+                                                    allBooks!.data![i]
+                                                            ["photoUrl"]
+                                                        .toString()
+                                                        .isEmpty
+                                                ? 'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
+                                                : allBooks!.data![i]["photoUrl"]
+                                                    .toString(),
+                                            fit: BoxFit.cover,
+                                            height: 160,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                2.2,
                                           ),
                                         ),
-                                        Text(
-                                          'R\$ ${snapshot.data![i].price!.toString()}',
-                                          style: const TextStyle(
-                                            color: Colors.indigo,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
-                                            snapshot.data![i].customer == null
-                                                ? const Text('',
-                                                    style: TextStyle(
-                                                        color: Colors.black))
-                                                : Text(
-                                                    'Por: ${snapshot.data![i].customer!['name']}',
-                                                    style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontSize: 12,
-                                                    )),
-                                          ],
-                                        ),
-                                        Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  const BorderRadius.only(
+                                        filter!
+                                            ? Positioned(
+                                                bottom: 0,
+                                                right: 0,
+                                                left: 0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: allBooks!.data![i]
+                                                                ["status"]
+                                                            .toString()
+                                                            .contains('VENDIDO')
+                                                        ? Colors.yellow
+                                                        : allBooks!.data![i]
+                                                                    ["status"]
+                                                                .toString()
+                                                                .contains(
+                                                                    'CANCELADO')
+                                                            ? Colors.red
+                                                            : allBooks!.data![i]
+                                                                        [
+                                                                        "status"]
+                                                                    .toString()
+                                                                    .contains(
+                                                                        'DELETADO')
+                                                                ? Colors.blue
+                                                                : Colors.green,
+                                                    borderRadius:
+                                                        const BorderRadius.only(
                                                       bottomLeft:
                                                           Radius.circular(20),
                                                       bottomRight:
-                                                          Radius.circular(20)),
-                                              child: Image.network(
-                                                snapshot.data![i].photoUrl ==
-                                                            null ||
-                                                        snapshot.data![i]
-                                                            .photoUrl!.isEmpty
-                                                    ? 'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
-                                                    : snapshot
-                                                        .data![i].photoUrl!,
-                                                fit: BoxFit.cover,
-                                                height: 160,
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    2.2,
-                                              ),
-                                            ),
-                                            filter!
-                                                ? Positioned(
-                                                    bottom: 0,
-                                                    right: 0,
-                                                    left: 0,
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: snapshot.data![i]
-                                                                .status!
-                                                                .contains(
-                                                                    'VENDIDO')
-                                                            ? Colors.yellow
-                                                            : snapshot.data![i]
-                                                                    .status!
-                                                                    .contains(
-                                                                        'CANCELADO')
-                                                                ? Colors.red
-                                                                : snapshot
-                                                                        .data![
-                                                                            i]
-                                                                        .status!
-                                                                        .contains(
-                                                                            'DELETADO')
-                                                                    ? Colors
-                                                                        .blue
-                                                                    : Colors
-                                                                        .green,
-                                                        borderRadius:
-                                                            const BorderRadius
-                                                                .only(
-                                                          bottomLeft:
-                                                              Radius.circular(
-                                                                  20),
-                                                          bottomRight:
-                                                              Radius.circular(
-                                                            20,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      alignment:
-                                                          Alignment.center,
-                                                      height: 20,
-                                                      child: Text(
-                                                        snapshot
-                                                            .data![i].status!,
-                                                        style: TextStyle(
-                                                            color: snapshot
-                                                                    .data![i]
-                                                                    .status!
-                                                                    .contains(
-                                                                        'VENDIDO')
-                                                                ? Colors.black
-                                                                : Colors.white),
+                                                          Radius.circular(
+                                                        20,
                                                       ),
                                                     ),
-                                                  )
-                                                : Container()
-                                          ],
-                                        )
+                                                  ),
+                                                  alignment: Alignment.center,
+                                                  height: 20,
+                                                  child: Text(
+                                                    allBooks!.data![i]
+                                                        ['status']!,
+                                                    style: TextStyle(
+                                                        color: allBooks!
+                                                                .data![i]
+                                                                    ["status"]
+                                                                .toString()
+                                                                .contains(
+                                                                    'VENDIDO')
+                                                            ? Colors.black
+                                                            : Colors.white),
+                                                  ),
+                                                ),
+                                              )
+                                            : Container()
                                       ],
-                                    ),
-                                  ),
-                                ));
-                          }));
-                } else if (snapshot.hasError) {
-                  return const Text("Erro ao conectar no banco.");
-                } else {
-                  return Container();
-                }
-              },
-            ),
-          ),
-        ]),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+          ],
+        ),
       ),
     );
   }
@@ -755,6 +757,8 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 pageIndex = 0;
               });
+
+              filter! ? getAllBookList() : getBookList();
             },
             icon: pageIndex == 0
                 ? const Icon(
