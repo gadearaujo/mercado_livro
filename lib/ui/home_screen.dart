@@ -210,17 +210,26 @@ class _HomeScreenState extends State<HomeScreen> {
         _crossAxisCount;
     var height = width / _aspectRatio;
     return LiquidPullToRefresh(
-      key: _refreshIndicatorKey, // key if you want to add
-      onRefresh: _handleRefresh, // refresh callback
+      key: _refreshIndicatorKey,
+      onRefresh: _handleRefresh,
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Material(
               elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: Colors.indigo, width: 1),
+              ),
               child: Container(
                 padding: const EdgeInsets.all(20),
-                color: Colors.indigo,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20)),
+                  color: Colors.indigo,
+                ),
                 child: Column(children: [
                   TextFormField(
                     style: const TextStyle(color: Colors.white),
@@ -308,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 5,
                           mainAxisSpacing: 5,
-                          childAspectRatio: _aspectRatio / 2.5,
+                          childAspectRatio: _aspectRatio / 3.0,
                         ),
                         itemBuilder: (BuildContext context, int i) {
                           return Card(
@@ -359,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         const SizedBox(
-                                          width: 10,
+                                          width: 5,
                                         ),
                                         allBooks!.data![i]['customer'] == null
                                             ? const Text('',
@@ -377,8 +386,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         ClipRRect(
                                           borderRadius: const BorderRadius.only(
-                                              bottomLeft: Radius.circular(20),
-                                              bottomRight: Radius.circular(20)),
+                                              bottomLeft: Radius.circular(0),
+                                              bottomRight: Radius.circular(0)),
                                           child: Image.network(
                                             allBooks!.data![i]["photoUrl"] ==
                                                         null ||
@@ -425,10 +434,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 : Colors.green,
                                                     borderRadius:
                                                         const BorderRadius.only(
-                                                      bottomLeft:
+                                                      topLeft:
                                                           Radius.circular(20),
-                                                      bottomRight:
-                                                          Radius.circular(
+                                                      topRight: Radius.circular(
                                                         20,
                                                       ),
                                                     ),
@@ -452,6 +460,39 @@ class _HomeScreenState extends State<HomeScreen> {
                                               )
                                             : Container()
                                       ],
+                                    ),
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(20),
+                                            bottomRight: Radius.circular(20)),
+                                        color: Colors.indigo,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Adicionar ao carrinho',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          IconButton(
+                                            onPressed: () {},
+                                            icon: const Icon(
+                                              Icons.add_shopping_cart,
+                                              size: 18,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     )
                                   ],
                                 ),
@@ -781,12 +822,12 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             icon: pageIndex == 1
                 ? const Icon(
-                    Icons.shopping_basket,
+                    Icons.shopping_cart,
                     color: Colors.white,
                     size: 35,
                   )
                 : const Icon(
-                    Icons.shopping_basket_outlined,
+                    Icons.shopping_cart_outlined,
                     color: Colors.white,
                     size: 35,
                   ),
