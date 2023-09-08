@@ -76,6 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
         SnackBar(
           content: const Text('Livros atualizados'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          behavior: SnackBarBehavior.floating,
+          // margin: const EdgeInsets.only(bottom: 10.0),
+          width: MediaQuery.of(context).size.width - 20,
           action: SnackBarAction(
             label: 'Repetir',
             textColor: Colors.white,
@@ -462,6 +468,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                     Container(
+                                      height: 40,
                                       decoration: const BoxDecoration(
                                         borderRadius: BorderRadius.only(
                                             bottomLeft: Radius.circular(20),
@@ -471,29 +478,52 @@ class _HomeScreenState extends State<HomeScreen> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 10),
                                       alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            'Adicionar ao carrinho',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.white,
+                                      child: InkWell(
+                                        onTap: () {
+                                          ScaffoldMessenger.of(_scaffoldKey
+                                                  .currentState!.context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              backgroundColor: Colors.indigo,
+                                              content: Text(
+                                                '${allBooks!.data![i]["name"]} adicionado ao carrinho!',
+                                                style: const TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                              ),
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width -
+                                                  20,
                                             ),
-                                          ),
-                                          const Spacer(),
-                                          IconButton(
-                                            onPressed: () {},
-                                            icon: const Icon(
+                                          );
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Text(
+                                              'Adicionar ao carrinho',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Icon(
                                               Icons.add_shopping_cart,
                                               size: 18,
                                               color: Colors.white,
                                             ),
-                                          )
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
