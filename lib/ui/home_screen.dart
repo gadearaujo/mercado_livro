@@ -10,6 +10,7 @@ import 'dart:convert';
 // ignore: depend_on_referenced_packages
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
+import '../service/model/customer_model.dart';
 import '../service/response/api_response.dart';
 import '../service/service.dart';
 
@@ -31,6 +32,15 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? filter = false;
   bool? checkBoxAll = false;
   bool? checkBoxToSell = true;
+  bool? showPassword = true;
+  bool? showLoading = false;
+  bool? isLogged = false;
+
+  CustomerModel? customer;
+
+  TextEditingController? nameController;
+  TextEditingController? emailController;
+  TextEditingController? passwordController;
 
   List? dataFromResponse;
 
@@ -47,6 +57,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     getBookList();
+
+    nameController = TextEditingController();
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
   }
 
   void getBookList() async {
@@ -63,6 +77,38 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       allBooks = _apiResponse.book!;
     });
+  }
+
+  void registerCustomer() async {
+    _apiResponse = await _service.registerCustomer(
+        nameController!.text, passwordController!.text, emailController!.text);
+
+    if (_apiResponse.apiErrorT == null) {
+      setState(() {
+        showLoading = false;
+        isLogged = true;
+        customer = _apiResponse.customer!;
+      });
+    } else {
+      setState(() {
+        showLoading = false;
+      });
+      ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red[700],
+          content: Text(
+            ('Erro: ${utf8.decode(_apiResponse.apiError!.message!.codeUnits)}'),
+            style: const TextStyle(color: Colors.white),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          behavior: SnackBarBehavior.floating,
+          // ignore: use_build_context_synchronously
+          width: MediaQuery.of(context).size.width - 20,
+        ),
+      );
+    }
   }
 
   Future<void> _handleRefresh() {
@@ -206,7 +252,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? shopping()
                 : pageIndex == 2
                     ? publishBook()
-                    : registerPage());
+                    : isLogged!
+                        ? profilePage()
+                        : registerPage());
+  }
+
+  Widget profilePage() {
+    return SingleChildScrollView(
+      child: Column(children: [
+        Text('Nome: ${customer!.name}'),
+        Text('Email: ${customer!.email}'),
+      ]),
+    );
   }
 
   Widget homePage() {
@@ -710,111 +767,182 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget registerPage() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SingleChildScrollView(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(
-                height: 60,
-              ),
-              const Text(
-                'Criar conta',
-                style: TextStyle(
-                  color: Colors.indigo,
-                  fontSize: 45,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Image.asset(
-                'assets/login-image.webp',
-                height: 250,
-                width: 250,
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-              TextFormField(
-                textInputAction: TextInputAction.next,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  filled: true,
-                  hintText: 'Email',
-                  fillColor: Colors.indigo,
-                  hintStyle: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                style: const TextStyle(color: Colors.white),
-                obscureText: true,
-                decoration: const InputDecoration(
-                  filled: true,
-                  hintText: 'Senha',
-                  fillColor: Colors.indigo,
-                  hintStyle: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Container(
-                height: 50.0,
-                margin: const EdgeInsets.all(10),
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ButtonStyle(
-                      shape: MaterialStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            50.0,
+      child: showLoading!
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 60,
+                    ),
+                    const Text(
+                      'Criar conta',
+                      style: TextStyle(
+                        color: Colors.indigo,
+                        fontSize: 45,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Image.asset(
+                      'assets/login-image.webp',
+                      height: 250,
+                      width: 250,
+                    ),
+                    const SizedBox(
+                      height: 40,
+                    ),
+                    TextFormField(
+                      controller: nameController,
+                      textInputAction: TextInputAction.next,
+                      cursorColor: Colors.white,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        filled: true,
+                        hintText: 'Nome',
+                        fillColor: Colors.indigo,
+                        hintStyle: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    TextFormField(
+                      controller: emailController,
+                      style: const TextStyle(color: Colors.white),
+                      textInputAction: TextInputAction.next,
+                      cursorColor: Colors.white,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        hintText: 'Email',
+                        fillColor: Colors.indigo,
+                        hintStyle: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    TextFormField(
+                      controller: passwordController,
+                      style: const TextStyle(color: Colors.white),
+                      obscureText: true,
+                      cursorColor: Colors.white,
+                      decoration: InputDecoration(
+                        filled: true,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            showPassword!
+                                ? Icons.remove_red_eye_rounded
+                                : Icons.remove_red_eye,
+                          ),
+                          color: Colors.white,
+                          onPressed: () {
+                            setState(() {
+                              showPassword = !showPassword!;
+                            });
+                          },
+                        ),
+                        hintText: 'Senha',
+                        fillColor: Colors.indigo,
+                        hintStyle: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Container(
+                      height: 50.0,
+                      margin: const EdgeInsets.all(10),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            showLoading = true;
+                          });
+                          if (nameController!.text.isNotEmpty &&
+                              emailController!.text.isNotEmpty &&
+                              passwordController!.text.isNotEmpty) {
+                            registerCustomer();
+                          } else {
+                            ScaffoldMessenger.of(
+                                    _scaffoldKey.currentState!.context)
+                                .showSnackBar(
+                              SnackBar(
+                                backgroundColor: Colors.red[700],
+                                content: const Text(
+                                  'Todos os campos devem ser preenchidos',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                width: MediaQuery.of(context).size.width - 20,
+                              ),
+                            );
+                          }
+                        },
+                        style: ButtonStyle(
+                            shape: MaterialStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  50.0,
+                                ),
+                              ),
+                            ),
+                            padding: const MaterialStatePropertyAll(
+                              EdgeInsets.all(0.0),
+                            )),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                  colors: [
+                                    Colors.indigo,
+                                    Color.fromARGB(255, 5, 22, 137)
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  tileMode: TileMode.repeated),
+                              borderRadius: BorderRadius.circular(30.0)),
+                          child: Container(
+                            constraints: const BoxConstraints(
+                                maxWidth: 250.0, minHeight: 50.0),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Registrar",
+                              textAlign: TextAlign.center,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 15),
+                            ),
                           ),
                         ),
                       ),
-                      padding: const MaterialStatePropertyAll(
-                        EdgeInsets.all(0.0),
-                      )),
-                  child: Ink(
-                    decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                            colors: [
-                              Colors.indigo,
-                              Color.fromARGB(255, 5, 22, 137)
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            tileMode: TileMode.repeated),
-                        borderRadius: BorderRadius.circular(30.0)),
-                    child: Container(
-                      constraints: const BoxConstraints(
-                          maxWidth: 250.0, minHeight: 50.0),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "Registrar",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 15),
-                      ),
                     ),
-                  ),
-                ),
-              ),
-            ]),
-      ),
+                  ]),
+            ),
     );
   }
 
   Container buildMyNavBar(BuildContext context) {
     return Container(
       height: 60,
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-        borderRadius: const BorderRadius.only(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+            colors: [
+              Colors.indigo,
+              Colors.indigo,
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            tileMode: TileMode.repeated),
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
@@ -885,6 +1013,7 @@ class _HomeScreenState extends State<HomeScreen> {
             enableFeedback: false,
             onPressed: () {
               setState(() {
+                showLoading = false;
                 pageIndex = 3;
               });
             },
