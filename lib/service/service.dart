@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import '../config.dart';
 import 'model/api_error_model.dart';
+import 'model/customer_login_model.dart';
 
 class Service {
   Future<ApiResponse> getBooks(bool active) async {
@@ -94,6 +95,57 @@ class Service {
       }
     } on SocketException {
       _apiResponse.apiError = ApiError();
+    }
+
+    return _apiResponse;
+  }
+
+  Future<ApiResponse> loginCustomer(String? password, String? email) async {
+    ApiResponse _apiResponse = ApiResponse();
+
+    try {
+      var headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Accept'
+      };
+      var request = http.Request(
+          'GET',
+          Uri.parse(
+              '$SERVER_URL/customer/login?email=$email&password=$password'));
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+      var responseRequest = await http.Response.fromStream(response);
+
+      switch (response.statusCode) {
+        case 200:
+          List<Map<String, dynamic>> map = [];
+          map =
+              List<Map<String, dynamic>>.from(jsonDecode(responseRequest.body));
+
+          print(map);
+
+          _apiResponse.customerLogin = map;
+
+          break;
+        case 401:
+          if (_apiResponse != null) {
+            _apiResponse.apiError =
+                ApiError.fromJson(json.decode(responseRequest.body));
+          }
+          break;
+        case 400:
+          _apiResponse.apiError =
+              ApiError.fromJson(json.decode(responseRequest.body));
+          break;
+        default:
+          _apiResponse.apiError =
+              ApiError.fromJson(json.decode(responseRequest.body));
+          break;
+      }
+    } on SocketException {
+      // _apiResponse.apiError = ApiError(isError: true);
     }
 
     return _apiResponse;

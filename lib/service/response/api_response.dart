@@ -1,16 +1,22 @@
 import 'package:mercado_livro/service/model/book_model.dart';
 
 import '../model/api_error_model.dart';
+import '../model/customer_login_model.dart';
 import '../model/customer_model.dart';
 
 class ApiResponse {
   BookModel? _book;
   CustomerModel? _customer;
+  List<Map<String, dynamic>>? _customerLogin;
 
   ApiError? apiErrorT;
 
   BookModel? get book => _book!;
   set book(BookModel? book) => _book = book;
+
+  List<Map<String, dynamic>>? get customerLogin => _customerLogin!;
+  set customerLogin(List<Map<String, dynamic>>? customerLogin) =>
+      _customerLogin = customerLogin;
 
   CustomerModel? get customer => _customer!;
   set customer(CustomerModel? customer) => _customer = customer;
