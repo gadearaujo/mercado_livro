@@ -95,7 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _apiResponse = await _service.getBooks(true);
 
     setState(() {
-      allBooks = _apiResponse.book!;
+      if (_apiResponse.book! == null) {
+      } else {
+        allBooks = _apiResponse.book!;
+      }
     });
   }
 
@@ -365,11 +368,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                'Nome: ${customerLogin![0]['name']}',
+                                customerLogin == null
+                                    ? 'Nome: Erro'
+                                    : 'Nome: ${customerLogin![0]['name']}',
                                 style: const TextStyle(color: Colors.white),
                               ),
                               Text(
-                                'Email: ${customerLogin![0]['email']}',
+                                customerLogin == null
+                                    ? 'Email: Erro'
+                                    : 'Email: ${customerLogin![0]['email']}',
                                 style: const TextStyle(color: Colors.white),
                               ),
                               Row(
@@ -382,9 +389,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                           style: const TextStyle(
                                               color: Colors.white),
                                         )
-                                      : const Text(
-                                          'Senha: ********',
-                                          style: TextStyle(color: Colors.white),
+                                      : Text(
+                                          customerLogin == null
+                                              ? 'Senha: Erro'
+                                              : 'Senha: ********',
+                                          style: const TextStyle(
+                                              color: Colors.white),
                                         ),
                                   const SizedBox(
                                     width: 10,
