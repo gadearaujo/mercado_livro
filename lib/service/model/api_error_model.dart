@@ -4,7 +4,7 @@ class ApiError {
   final int? httpCode;
   final String? message;
   final String? internalCode;
-  final List<FieldErrorResponse>? errors;
+  final List? errors;
 
   ApiError({
     this.errors,

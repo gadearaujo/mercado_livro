@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? filter = false;
   bool? checkBoxAll = false;
   bool? checkBoxToSell = true;
-  bool? showPassword = true;
+  bool? showPassword = false;
   bool? showLoading = false;
   bool? isLogged = false;
   bool? goToLogin = false;
@@ -126,11 +126,18 @@ class _HomeScreenState extends State<HomeScreen> {
         isLogged = false;
         showLoading = false;
       });
+      String message = "";
+
+      _apiResponse.apiError!.errors!.forEach((element) {
+        setState(() {
+          message = element['message'];
+        });
+      });
       ScaffoldMessenger.of(_scaffoldKey.currentState!.context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red[700],
           content: Text(
-            ('Erro: ${utf8.decode(_apiResponse.apiError!.message!.codeUnits)}'),
+            ('Erro: ${utf8.decode(message.codeUnits)}'),
             style: const TextStyle(color: Colors.white),
           ),
           shape: RoundedRectangleBorder(
@@ -368,13 +375,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                customerLogin == null
+                                customerLogin == null || customerLogin!.isEmpty
                                     ? 'Nome: Erro'
                                     : 'Nome: ${customerLogin![0]['name']}',
                                 style: const TextStyle(color: Colors.white),
                               ),
                               Text(
-                                customerLogin == null
+                                customerLogin == null || customerLogin!.isEmpty
                                     ? 'Email: Erro'
                                     : 'Email: ${customerLogin![0]['email']}',
                                 style: const TextStyle(color: Colors.white),
@@ -390,7 +397,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white),
                                         )
                                       : Text(
-                                          customerLogin == null
+                                          customerLogin == null ||
+                                                  customerLogin!.isEmpty
                                               ? 'Senha: Erro'
                                               : 'Senha: ********',
                                           style: const TextStyle(
@@ -1065,15 +1073,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     TextFormField(
                       controller: passwordController,
                       style: const TextStyle(color: Colors.white),
-                      obscureText: true,
+                      obscureText: showPassword!,
                       cursorColor: Colors.white,
                       decoration: InputDecoration(
                         filled: true,
                         suffixIcon: IconButton(
                           icon: Icon(
                             showPassword!
-                                ? Icons.remove_red_eye_rounded
-                                : Icons.remove_red_eye,
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           color: Colors.white,
                           onPressed: () {

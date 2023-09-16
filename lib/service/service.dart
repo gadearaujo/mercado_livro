@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import '../config.dart';
 import 'model/api_error_model.dart';
 import 'model/customer_login_model.dart';
+import 'model/error_response.dart';
 
 class Service {
   Future<ApiResponse> getBooks(bool active) async {
@@ -87,6 +88,15 @@ class Service {
           break;
         case 201:
           _apiResponse.customer = CustomerModel.fromJson(json.decode(r.body));
+          break;
+        case 422:
+          print(json.decode(r.body));
+          // _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+
+        case 404:
+          print(json.decode(r.body));
+          _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
           break;
         default:
           if (r.body.isNotEmpty) {
