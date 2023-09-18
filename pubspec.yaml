@@ -21,6 +21,7 @@ dev_dependencies:
   http:
   liquid_pull_to_refresh: ^3.0.1
   shared_preferences: ^2.2.0
+  image_picker: ^1.0.4
 
 
 flutter:

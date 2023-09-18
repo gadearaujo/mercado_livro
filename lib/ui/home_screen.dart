@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mercado_livro/service/model/book_model.dart';
 
 // ignore: depend_on_referenced_packages
@@ -10,6 +12,7 @@ import 'dart:convert';
 // ignore: depend_on_referenced_packages
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../service/model/customer_model.dart';
 import '../service/response/api_response.dart';
@@ -59,6 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
   double _crossAxisSpacing = 8, _mainAxisSpacing = 12, _aspectRatio = 2;
   int _crossAxisCount = 2;
 
+  File? image;
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +75,17 @@ class _HomeScreenState extends State<HomeScreen> {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+  }
+
+  Future pickImage() async {
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+      final imageTemp = File(image.path);
+      setState(() => this.image = imageTemp);
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
   }
 
   void initSharedPreferences() async {
@@ -335,158 +351,155 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget profilePage() {
     return SingleChildScrollView(
-      child: Container(
-        child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Material(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: const BorderSide(color: Colors.indigo, width: 1),
+      child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Material(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: Colors.indigo, width: 1),
+              ),
+              child: Container(
+                height: 150,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20)),
+                  color: Colors.indigo,
                 ),
-                child: Container(
-                  height: 150,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20)),
-                    color: Colors.indigo,
-                  ),
-                  child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.all(20),
-                          height: 100,
-                          width: 100,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.all(20),
+                        height: 100,
+                        width: 100,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
                         ),
-                        const Spacer(),
-                        Container(
-                          margin: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                customerLogin == null || customerLogin!.isEmpty
-                                    ? 'Nome: Erro'
-                                    : 'Nome: ${customerLogin![0]['name']}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              Text(
-                                customerLogin == null || customerLogin!.isEmpty
-                                    ? 'Email: Erro'
-                                    : 'Email: ${customerLogin![0]['email']}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  seePasswordProfile!
-                                      ? Text(
-                                          'Senha: ${customerLogin![0]['password']}',
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        )
-                                      : Text(
-                                          customerLogin == null ||
-                                                  customerLogin!.isEmpty
-                                              ? 'Senha: Erro'
-                                              : 'Senha: ********',
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        seePasswordProfile =
-                                            !seePasswordProfile!;
-                                      });
-                                    },
-                                    child: Row(children: [
-                                      Icon(
-                                        seePasswordProfile!
-                                            ? Icons.visibility
-                                            : Icons.visibility_off_outlined,
-                                        color: Colors.white,
-                                        size: 22,
+                      ),
+                      const Spacer(),
+                      Container(
+                        margin: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              customerLogin == null || customerLogin!.isEmpty
+                                  ? 'Nome: Erro'
+                                  : 'Nome: ${customerLogin![0]['name']}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            Text(
+                              customerLogin == null || customerLogin!.isEmpty
+                                  ? 'Email: Erro'
+                                  : 'Email: ${customerLogin![0]['email']}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                seePasswordProfile!
+                                    ? Text(
+                                        'Senha: ${customerLogin![0]['password']}',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      )
+                                    : Text(
+                                        customerLogin == null ||
+                                                customerLogin!.isEmpty
+                                            ? 'Senha: Erro'
+                                            : 'Senha: ********',
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
-                                    ]),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ]),
-                ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height / 2,
-              ),
-              Container(
-                height: 60.0,
-                alignment: Alignment.bottomCenter,
-                margin: const EdgeInsets.all(10),
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      prefs!.setBool("logged", false);
-                      showLoading = false;
-                      isLogged = false;
-                      customer = null;
-                    });
-                  },
-                  style: ButtonStyle(
-                      elevation: const MaterialStatePropertyAll(10),
-                      shape: MaterialStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            10.0,
-                          ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      seePasswordProfile = !seePasswordProfile!;
+                                    });
+                                  },
+                                  child: Row(children: [
+                                    Icon(
+                                      seePasswordProfile!
+                                          ? Icons.visibility
+                                          : Icons.visibility_off_outlined,
+                                      color: Colors.white,
+                                      size: 22,
+                                    ),
+                                  ]),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      padding: const MaterialStatePropertyAll(
-                        EdgeInsets.all(0.0),
-                      )),
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [Colors.red, Colors.red[700]!],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          tileMode: TileMode.repeated),
-                      borderRadius: BorderRadius.circular(
-                        10.0,
+                    ]),
+              ),
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height / 2,
+            ),
+            Container(
+              height: 60.0,
+              alignment: Alignment.bottomCenter,
+              margin: const EdgeInsets.all(10),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    prefs!.setBool("logged", false);
+                    showLoading = false;
+                    isLogged = false;
+                    customer = null;
+                  });
+                },
+                style: ButtonStyle(
+                    elevation: const MaterialStatePropertyAll(10),
+                    shape: MaterialStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          10.0,
+                        ),
                       ),
                     ),
-                    child: Container(
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width - 20,
-                          minHeight: 50.0),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "SAIR",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      ),
+                    padding: const MaterialStatePropertyAll(
+                      EdgeInsets.all(0.0),
+                    )),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Colors.red, Colors.red[700]!],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        tileMode: TileMode.repeated),
+                    borderRadius: BorderRadius.circular(
+                      10.0,
+                    ),
+                  ),
+                  child: Container(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width - 20,
+                        minHeight: 50.0),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "SAIR",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
                 ),
               ),
-            ]),
-      ),
+            ),
+          ]),
     );
   }
 
@@ -1032,6 +1045,53 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(
                       height: 40,
+                    ),
+                    goToLogin!
+                        ? Container()
+                        : InkWell(
+                            onTap: () {
+                              pickImage();
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Spacer(),
+                                Text(
+                                  image == null
+                                      ? 'Foto de perfil'
+                                      : 'Trocar foto',
+                                  style: const TextStyle(
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                image == null
+                                    ? Container(
+                                        height: 60,
+                                        width: 60,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.indigo,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt_outlined,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Image.file(
+                                        image!,
+                                        height: 60,
+                                        width: 60,
+                                      ),
+                                const Spacer(),
+                              ],
+                            ),
+                          ),
+                    const SizedBox(
+                      height: 20,
                     ),
                     goToLogin!
                         ? Container()
