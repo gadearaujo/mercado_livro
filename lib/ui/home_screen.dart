@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? filter = false;
   bool? checkBoxAll = false;
   bool? checkBoxToSell = true;
-  bool? showPassword = false;
+  bool? showPassword = true;
   bool? showLoading = false;
   bool? isLogged = false;
   bool? goToLogin = false;
@@ -728,7 +728,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 : allBooks!.data![i]["photoUrl"]
                                                     .toString(),
                                             fit: BoxFit.cover,
-                                            height: 160,
+                                            height: 120,
                                             width: MediaQuery.of(context)
                                                     .size
                                                     .width /
@@ -1041,20 +1041,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(
-                      height: 60,
+                      height: 20,
                     ),
                     Text(
                       goToLogin! ? 'Entrar' : 'Criar conta',
                       style: const TextStyle(
                         color: Colors.indigo,
-                        fontSize: 45,
+                        fontSize: 38,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     Image.asset(
                       'assets/login-image.webp',
-                      height: 250,
-                      width: 250,
+                      height: 200,
+                      width: 200,
                     ),
                     InkWell(
                       onTap: () {
