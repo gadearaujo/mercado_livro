@@ -1,18 +1,26 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mercado_livro/config.dart';
 import 'package:mercado_livro/service/model/book_model.dart';
 
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:path/path.dart' as path;
+
 // ignore: depend_on_referenced_packages
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart'; //From 3.x.x version
+
+import 'package:async/async.dart';
+import 'dart:io';
 
 import '../service/model/customer_model.dart';
 import '../service/response/api_response.dart';
@@ -62,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double _crossAxisSpacing = 8, _mainAxisSpacing = 12, _aspectRatio = 2;
   int _crossAxisCount = 2;
 
-  File? image;
+  XFile? image;
 
   @override
   void initState() {
@@ -79,9 +87,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future pickImage() async {
     try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null) return;
-      final imageTemp = File(image.path);
+      final imageTemp = XFile(image!.path);
       setState(() => this.image = imageTemp);
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
@@ -131,11 +139,28 @@ class _HomeScreenState extends State<HomeScreen> {
         nameController!.text, passwordController!.text, emailController!.text);
 
     if (_apiResponse.apiErrorT == null) {
+      Uri uri = Uri.parse(
+          'http://192.168.0.105:8080/customer/${_apiResponse.customer!.id}/profile-picture');
+      http.MultipartRequest request = http.MultipartRequest('POST', uri);
+
+      request.files.add(await http.MultipartFile.fromPath('file', image!.path));
+
+      http.StreamedResponse response = await request.send();
+      var responseBytes = await response.stream.toBytes();
+      var responseString = utf8.decode(responseBytes);
+      print('\n\n');
+      print('RESPONSE WITH HTTP');
+      print(response.statusCode);
+      print('\n\n');
       setState(() {
-        prefs!.setBool("logged", true);
-        showLoading = false;
-        isLogged = true;
-        customer = _apiResponse.customer!;
+        // prefs!.setBool("logged", true);
+        // showLoading = false;
+        // isLogged = true;
+
+        // customer = _apiResponse.customer!;
+        // customerLogin = _apiResponse.customerLogin!;
+
+        loginCustomer();
       });
     } else {
       setState(() {
@@ -350,6 +375,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget profilePage() {
+    var _bytesImage = Base64Decoder().convert(customerLogin![0]['photoUrl']);
+
     return SingleChildScrollView(
       child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -374,15 +401,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        margin: const EdgeInsets.all(20),
                         height: 100,
                         width: 100,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
+                        child: CircleAvatar(
+                            radius: 30.0,
+                            backgroundImage: MemoryImage(_bytesImage)),
                       ),
-                      const Spacer(),
                       Container(
                         margin: const EdgeInsets.all(20),
                         child: Column(
@@ -392,13 +416,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               customerLogin == null || customerLogin!.isEmpty
                                   ? 'Nome: Erro'
-                                  : 'Nome: ${customerLogin![0]['name']}',
+                                  : 'Nome: ${utf8.decode(customerLogin![0]['name'].toString().codeUnits)}',
                               style: const TextStyle(color: Colors.white),
                             ),
                             Text(
                               customerLogin == null || customerLogin!.isEmpty
                                   ? 'Email: Erro'
-                                  : 'Email: ${customerLogin![0]['email']}',
+                                  : 'Email: ${utf8.decode(customerLogin![0]['email'].toString().codeUnits)}',
                               style: const TextStyle(color: Colors.white),
                             ),
                             Row(
@@ -407,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 seePasswordProfile!
                                     ? Text(
-                                        'Senha: ${customerLogin![0]['password']}',
+                                        'Senha: ${utf8.decode(customerLogin![0]['password'].toString().codeUnits)}',
                                         style: const TextStyle(
                                             color: Colors.white),
                                       )
@@ -460,6 +484,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     showLoading = false;
                     isLogged = false;
                     customer = null;
+                    customerLogin = null;
+                    passwordController!.text = '';
+                    nameController!.text = '';
+                    emailController!.text = '';
+                    image = null;
                   });
                 },
                 style: ButtonStyle(
@@ -1082,7 +1111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       )
                                     : Image.file(
-                                        image!,
+                                        File(image!.path),
                                         height: 60,
                                         width: 60,
                                       ),
