@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import '../config.dart';
 import 'model/api_error_model.dart';
+import 'model/book_response.dart';
 import 'model/customer_login_model.dart';
 import 'model/error_response.dart';
 import 'package:dio/dio.dart'; //From 3.x.x version
@@ -112,6 +113,65 @@ class Service {
     return _apiResponse;
   }
 
+  Future<ApiResponse> publishBook(
+    String? name,
+    double? price,
+    int? customerId,
+  ) async {
+    ApiResponse _apiResponse = ApiResponse();
+
+    try {
+      var headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Accept'
+      };
+      http.Response r = await http.post(Uri.parse('$SERVER_URL/book'),
+          headers: headers,
+          body: jsonEncode(<String, dynamic>{
+            "name": name,
+            "price": price,
+            "customer_id": customerId,
+            "photoUrl": "null",
+            // "photoUrl": null,
+          }));
+
+      switch (r.statusCode) {
+        case 200:
+          _apiResponse.book = BookModel.fromJson(json.decode(r.body));
+          break;
+        case 401:
+          _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+        case 400:
+          if (_apiResponse != null) {
+            _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          }
+          break;
+        case 201:
+          print(json.decode(r.body));
+          _apiResponse.bookResponse =
+              BookResponse.fromJson(json.decode(r.body));
+          break;
+        case 422:
+          // _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+
+        case 404:
+          print(json.decode(r.body));
+          _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+        default:
+          if (r.body.isNotEmpty) {
+            _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          }
+      }
+    } on SocketException {
+      _apiResponse.apiError = ApiError();
+    }
+
+    return _apiResponse;
+  }
+
   Future<ApiResponse> loginCustomer(String? password, String? email) async {
     ApiResponse _apiResponse = ApiResponse();
 
@@ -192,6 +252,57 @@ class Service {
           break;
         case 201:
           _apiResponse.customer = CustomerModel.fromJson(json.decode(r.body));
+          break;
+        case 422:
+          print(json.decode(r.body));
+          // _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+
+        case 404:
+          print(json.decode(r.body));
+          _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+        default:
+          if (r.body.isNotEmpty) {
+            _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          }
+      }
+    } on SocketException {
+      _apiResponse.apiError = ApiError();
+    }
+
+    return _apiResponse;
+  }
+
+  Future<ApiResponse> sendPhotoBook(
+      String? id, MapEntry<String, MultipartFile>? image) async {
+    ApiResponse _apiResponse = ApiResponse();
+
+    String named = image!.toString() + '?t=${DateTime.now()}';
+    try {
+      var headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Accept'
+      };
+      http.Response r = await http.post(
+          Uri.parse('$SERVER_URL/{$id}/book-picture'),
+          headers: headers,
+          body: jsonEncode(<String, dynamic>{"file": named}));
+
+      switch (r.statusCode) {
+        case 200:
+          _apiResponse.book = BookModel.fromJson(json.decode(r.body));
+          break;
+        case 401:
+          _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          break;
+        case 400:
+          if (_apiResponse != null) {
+            _apiResponse.apiError = ApiError.fromJson(json.decode(r.body));
+          }
+          break;
+        case 201:
+          _apiResponse.book = BookModel.fromJson(json.decode(r.body));
           break;
         case 422:
           print(json.decode(r.body));

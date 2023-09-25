@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'dart:io';
 import 'dart:ui';
 
@@ -12,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:path/path.dart' as path;
+
+import 'package:xml/xml.dart' as xml;
 
 // ignore: depend_on_referenced_packages
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
@@ -59,7 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController? nameController;
   TextEditingController? emailController;
   TextEditingController? passwordController;
-
+  TextEditingController? nameBookController;
+  TextEditingController? priceController;
   List? dataFromResponse;
 
   BookModel? allBooks;
@@ -71,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _crossAxisCount = 2;
 
   XFile? image;
+  XFile? imageBook;
 
   @override
   void initState() {
@@ -83,6 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    nameBookController = TextEditingController();
+    priceController = TextEditingController();
   }
 
   Future pickImage() async {
@@ -91,6 +98,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (image == null) return;
       final imageTemp = XFile(image!.path);
       setState(() => this.image = imageTemp);
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
+
+  Future pickImageBook() async {
+    try {
+      imageBook = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (imageBook == null) return;
+      final imageTemp = XFile(imageBook!.path);
+      setState(() => this.imageBook = imageTemp);
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
     }
@@ -148,18 +166,8 @@ class _HomeScreenState extends State<HomeScreen> {
       http.StreamedResponse response = await request.send();
       var responseBytes = await response.stream.toBytes();
       var responseString = utf8.decode(responseBytes);
-      print('\n\n');
-      print('RESPONSE WITH HTTP');
-      print(response.statusCode);
-      print('\n\n');
+
       setState(() {
-        // prefs!.setBool("logged", true);
-        // showLoading = false;
-        // isLogged = true;
-
-        // customer = _apiResponse.customer!;
-        // customerLogin = _apiResponse.customerLogin!;
-
         loginCustomer();
       });
     } else {
@@ -646,9 +654,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 5,
                           mainAxisSpacing: 5,
-                          childAspectRatio: _aspectRatio / 3.0,
+                          childAspectRatio: _aspectRatio / 2.6,
                         ),
                         itemBuilder: (BuildContext context, int i) {
+                          var _bytesImage = null;
+
+                          // if (allBooks!.data![i]['photo_url'] == null) {
+                          // } else {
+                          //   _bytesImage = Base64Decoder()
+                          //       .convert(allBooks!.data![i]['photo_url']);
+                          // }
                           return Card(
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(
@@ -714,27 +729,48 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Stack(
                                       children: [
                                         ClipRRect(
-                                          borderRadius: const BorderRadius.only(
-                                              bottomLeft: Radius.circular(0),
-                                              bottomRight: Radius.circular(0)),
-                                          child: Image.network(
-                                            allBooks!.data![i]["photoUrl"] ==
-                                                        null ||
-                                                    allBooks!.data![i]
-                                                            ["photoUrl"]
-                                                        .toString()
-                                                        .isEmpty
-                                                ? 'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
-                                                : allBooks!.data![i]["photoUrl"]
-                                                    .toString(),
-                                            fit: BoxFit.cover,
-                                            height: 120,
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width /
-                                                2.2,
-                                          ),
-                                        ),
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                                    bottomLeft:
+                                                        Radius.circular(0),
+                                                    bottomRight:
+                                                        Radius.circular(0)),
+                                            child:
+                                                // allBooks!.data![0]
+                                                //             ["photo_url"] ==
+                                                //         null
+                                                //     ? Image.network(
+                                                //         'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
+
+                                                //         //  allBooks!.data![i]["photoUrl"]
+                                                //         //     .toString()
+                                                //         ,
+                                                //         fit: BoxFit.cover,
+                                                //         height: 120,
+                                                //         width:
+                                                //             MediaQuery.of(context)
+                                                //                     .size
+                                                //                     .width /
+                                                //                 2.2,
+                                                //       )
+                                                //     :
+                                                allBooks!.data![i]
+                                                            ['photoUrl'] ==
+                                                        null
+                                                    ? Container()
+                                                    : Image.memory(
+                                                        const Base64Decoder()
+                                                            .convert(
+                                                          allBooks!.data![i]
+                                                              ['photoUrl'],
+                                                        ),
+                                                        height: 120,
+                                                        width: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width /
+                                                            2.2,
+                                                      )),
                                         filter!
                                             ? Positioned(
                                                 bottom: 0,
@@ -963,71 +999,221 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget publishBook() {
     return Center(
+      child: Container(
+        padding: const EdgeInsets.all(20),
         child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Publicar livro",
-          style: TextStyle(
-            color: Colors.indigo,
-            fontSize: 30,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const Text(
-          "Para isso, você precisa se registrar.",
-          style: TextStyle(
-            color: Colors.indigo,
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Container(
-          height: 50.0,
-          margin: const EdgeInsets.all(10),
-          child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                pageIndex = 3;
-              });
-            },
-            style: ButtonStyle(
-                shape: MaterialStatePropertyAll(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      50.0,
-                    ),
-                  ),
-                ),
-                padding: const MaterialStatePropertyAll(
-                  EdgeInsets.all(0.0),
-                )),
-            child: Ink(
-              decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [Colors.indigo, Color.fromARGB(255, 5, 22, 137)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      tileMode: TileMode.repeated),
-                  borderRadius: BorderRadius.circular(30.0)),
-              child: Container(
-                constraints:
-                    const BoxConstraints(maxWidth: 250.0, minHeight: 50.0),
-                alignment: Alignment.center,
-                child: const Text(
-                  "Registrar",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 15),
-                ),
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const Text(
+              "Publicar livro",
+              style: TextStyle(
+                color: Colors.indigo,
+                fontSize: 30,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
+            isLogged!
+                ? Container()
+                : const Text(
+                    "Para isso, você precisa se registrar.",
+                    style: TextStyle(
+                      color: Colors.indigo,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+            const SizedBox(
+              height: 20,
+            ),
+            isLogged!
+                ? Container()
+                : Container(
+                    height: 50.0,
+                    margin: const EdgeInsets.all(10),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          pageIndex = 3;
+                        });
+                      },
+                      style: ButtonStyle(
+                          shape: MaterialStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                50.0,
+                              ),
+                            ),
+                          ),
+                          padding: const MaterialStatePropertyAll(
+                            EdgeInsets.all(0.0),
+                          )),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                                colors: [
+                                  Colors.indigo,
+                                  Color.fromARGB(255, 5, 22, 137)
+                                ],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                tileMode: TileMode.repeated),
+                            borderRadius: BorderRadius.circular(30.0)),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                              maxWidth: 250.0, minHeight: 50.0),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Registrar",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+            isLogged!
+                ? InkWell(
+                    onTap: () {
+                      pickImageBook();
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Spacer(),
+                        Text(
+                          image == null ? 'Foto do livro' : 'Trocar foto',
+                          style: const TextStyle(
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        imageBook == null
+                            ? Container(
+                                height: 60,
+                                width: 60,
+                                decoration: const BoxDecoration(
+                                  color: Colors.indigo,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt_outlined,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Image.file(
+                                File(imageBook!.path),
+                                height: 60,
+                                width: 60,
+                              ),
+                        const Spacer(),
+                      ],
+                    ),
+                  )
+                : Container(),
+            const SizedBox(
+              height: 20,
+            ),
+            isLogged!
+                ? TextFormField(
+                    controller: nameBookController,
+                    textInputAction: TextInputAction.next,
+                    cursorColor: Colors.white,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      filled: true,
+                      hintText: 'Nome do livro',
+                      fillColor: Colors.indigo,
+                      hintStyle: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                : Container(),
+            const SizedBox(
+              height: 20,
+            ),
+            isLogged!
+                ? TextFormField(
+                    controller: priceController,
+                    textInputAction: TextInputAction.done,
+                    cursorColor: Colors.white,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      filled: true,
+                      hintText: 'Preço',
+                      fillColor: Colors.indigo,
+                      hintStyle: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                : Container(),
+            isLogged!
+                ? Container(
+                    height: 50.0,
+                    margin: const EdgeInsets.all(10),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        _apiResponse = await _service.publishBook(
+                            nameBookController!.text,
+                            double.parse(priceController!.text),
+                            customerLogin![0]['id']);
+
+                        Uri uri = Uri.parse(
+                            'http://192.168.0.105:8080/book/${_apiResponse.bookResponse!.id}/book-picture');
+                        http.MultipartRequest request =
+                            http.MultipartRequest('POST', uri);
+
+                        request.files.add(await http.MultipartFile.fromPath(
+                            'file', imageBook!.path));
+
+                        http.StreamedResponse response = await request.send();
+                        var responseBytes = await response.stream.toBytes();
+                        var responseString = utf8.decode(responseBytes);
+                      },
+                      style: ButtonStyle(
+                          shape: MaterialStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                50.0,
+                              ),
+                            ),
+                          ),
+                          padding: const MaterialStatePropertyAll(
+                            EdgeInsets.all(0.0),
+                          )),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                                colors: [
+                                  Colors.indigo,
+                                  Color.fromARGB(255, 5, 22, 137)
+                                ],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                tileMode: TileMode.repeated),
+                            borderRadius: BorderRadius.circular(30.0)),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                              maxWidth: 250.0, minHeight: 50.0),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Publicar livro",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 15),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
+          ],
         ),
-      ],
-    ));
+      ),
+    );
   }
 
   Widget registerPage() {
