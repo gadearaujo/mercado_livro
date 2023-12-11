@@ -211,8 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
         isLogged = true;
         prefs!.setString("email", emailController!.text);
         prefs!.setString("password", passwordController!.text);
-        print(_apiResponse.customerLogin!);
-        customerLogin = _apiResponse.customerLogin!;
+         customerLogin = _apiResponse.customerLogin!;
       });
     } else {
       setState(() {
@@ -383,7 +382,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget profilePage() {
-    var _bytesImage = Base64Decoder().convert(customerLogin![0]['photoUrl']);
+   
+    var bytesImage = const Base64Decoder().convert(customerLogin![0]['photoUrl']);
 
     return SingleChildScrollView(
       child: Column(
@@ -408,13 +408,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
+                   bytesImage != null ? Container(
                         height: 100,
                         width: 100,
                         child: CircleAvatar(
                             radius: 30.0,
-                            backgroundImage: MemoryImage(_bytesImage)),
-                      ),
+                            backgroundImage: MemoryImage(bytesImage)),
+                      ): Container(),
                       Container(
                         margin: const EdgeInsets.all(20),
                         child: Column(

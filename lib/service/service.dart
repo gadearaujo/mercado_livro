@@ -76,7 +76,7 @@ class Service {
             "password": password,
             "photoUrl": "null",
           }));
-
+      print(r.statusCode);
       switch (r.statusCode) {
         case 200:
           _apiResponse.customer = CustomerModel.fromJson(json.decode(r.body));
@@ -177,7 +177,7 @@ class Service {
 
     try {
       var headers = {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Accept'
       };
       var request = http.Request(
@@ -216,8 +216,11 @@ class Service {
               ApiError.fromJson(json.decode(responseRequest.body));
           break;
       }
-    } on SocketException {
-      // _apiResponse.apiError = ApiError(isError: true);
+     } catch (e) {
+      if(e is SocketException){
+        //treat SocketException
+        print("Socket exception: ${e.toString()}");
+      }
     }
 
     return _apiResponse;
