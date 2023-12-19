@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mercado_livro/config.dart';
 import 'package:mercado_livro/service/model/book_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
@@ -158,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_apiResponse.apiErrorT == null) {
       Uri uri = Uri.parse(
-          'http://192.168.0.105:8080/customer/${_apiResponse.customer!.id}/profile-picture');
+          '$SERVER_URL/customer/${_apiResponse.customer!.id}/profile-picture');
       http.MultipartRequest request = http.MultipartRequest('POST', uri);
 
       request.files.add(await http.MultipartFile.fromPath('file', image!.path));
@@ -205,14 +207,15 @@ class _HomeScreenState extends State<HomeScreen> {
         passwordController!.text, emailController!.text);
 
     if (_apiResponse.apiErrorT == null) {
-      setState(() {
+      setState(()  {
         prefs!.setBool("logged", true);
         showLoading = false;
         isLogged = true;
         prefs!.setString("email", emailController!.text);
         prefs!.setString("password", passwordController!.text);
-         customerLogin = _apiResponse.customerLogin!;
+        customerLogin = _apiResponse.customerLogin!;
       });
+
     } else {
       setState(() {
         showLoading = false;
@@ -383,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget profilePage() {
    
-    var bytesImage = const Base64Decoder().convert(customerLogin![0]['photoUrl']);
+    // var bytesImage = const Base64Decoder().convert(customerLogin![0]['photo_url']);
 
     return SingleChildScrollView(
       child: Column(
@@ -408,12 +411,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                   bytesImage != null ? Container(
+                   bytesProfilePicture != null ? Container(
                         height: 100,
                         width: 100,
-                        child: CircleAvatar(
-                            radius: 30.0,
-                            backgroundImage: MemoryImage(bytesImage)),
+                        child:
+                       Image.memory(Uint8List.fromList(bytesProfilePicture)) 
+                        // CircleAvatar(
+                        //     radius: 30.0,
+                        //     backgroundImage: MemoryImage(bytesProfilePicture)),
+                     
                       ): Container(),
                       Container(
                         margin: const EdgeInsets.all(20),
@@ -542,7 +548,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget homePage() {
     double screenWidth = MediaQuery.of(context).size.width;
-
     var width = (screenWidth - ((_crossAxisCount - 1) * _crossAxisSpacing)) /
         _crossAxisCount;
     var height = width / _aspectRatio;
@@ -658,12 +663,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         itemBuilder: (BuildContext context, int i) {
                           var _bytesImage = null;
-
-                          // if (allBooks!.data![i]['photo_url'] == null) {
-                          // } else {
-                          //   _bytesImage = Base64Decoder()
-                          //       .convert(allBooks!.data![i]['photo_url']);
-                          // }
+                          if (allBooks!.data![i]['photo_url'] == null) {
+                          } else {
+                            _bytesImage = Base64Decoder()
+                                .convert(allBooks!.data![i]['photo_url']);
+                          }
+                          print(allBooks!.data);
                           return Card(
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(
@@ -726,6 +731,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 )),
                                       ],
                                     ),
+                                    
                                     Stack(
                                       children: [
                                         ClipRRect(
@@ -735,42 +741,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         Radius.circular(0),
                                                     bottomRight:
                                                         Radius.circular(0)),
-                                            child:
-                                                // allBooks!.data![0]
-                                                //             ["photo_url"] ==
-                                                //         null
-                                                //     ? Image.network(
-                                                //         'https://img.freepik.com/psd-premium/modelo-de-capa-de-livro_125540-572.jpg?w=2000'
-
-                                                //         //  allBooks!.data![i]["photoUrl"]
-                                                //         //     .toString()
-                                                //         ,
-                                                //         fit: BoxFit.cover,
-                                                //         height: 120,
-                                                //         width:
-                                                //             MediaQuery.of(context)
-                                                //                     .size
-                                                //                     .width /
-                                                //                 2.2,
-                                                //       )
-                                                //     :
-                                                allBooks!.data![i]
-                                                            ['photoUrl'] ==
-                                                        null
-                                                    ? Container()
-                                                    : Image.memory(
-                                                        const Base64Decoder()
-                                                            .convert(
-                                                          allBooks!.data![i]
-                                                              ['photoUrl'],
-                                                        ),
-                                                        height: 120,
-                                                        width: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width /
-                                                            2.2,
-                                                      )),
+                                            child: Image.memory(Base64Decoder().convert(
+                                              allBooks!.data![i]
+                                                ['photo_url'],
+                                                ),
+                                              ),
+                                            ),
                                         filter!
                                             ? Positioned(
                                                 bottom: 0,
@@ -1162,17 +1138,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             double.parse(priceController!.text),
                             customerLogin![0]['id']);
 
-                        Uri uri = Uri.parse(
-                            'http://192.168.0.105:8080/book/${_apiResponse.bookResponse!.id}/book-picture');
-                        http.MultipartRequest request =
-                            http.MultipartRequest('POST', uri);
+                            Uri uri = Uri.parse(
+                                '$SERVER_URL/book/${_apiResponse.bookResponse!.id}/book-picture');
+                            http.MultipartRequest request =
+                                http.MultipartRequest('POST', uri);
 
-                        request.files.add(await http.MultipartFile.fromPath(
-                            'file', imageBook!.path));
+                            request.files.add(await http.MultipartFile.fromPath(
+                                'file', imageBook!.path));
 
-                        http.StreamedResponse response = await request.send();
-                        var responseBytes = await response.stream.toBytes();
-                        var responseString = utf8.decode(responseBytes);
+                            http.StreamedResponse response = await request.send();
+                            var responseBytes = await response.stream.toBytes();
+                            var responseString = utf8.decode(responseBytes);
                       },
                       style: ButtonStyle(
                           shape: MaterialStatePropertyAll(

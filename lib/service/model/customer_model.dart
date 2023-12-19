@@ -23,6 +23,6 @@ class CustomerModel {
         name: json['name'],
         email: json['email'],
         password: json['password'],
-        photoUrl: json['photoUrl']);
+        photoUrl: json['photo_url']);
   }
 }

@@ -29,7 +29,7 @@ class BookResponse {
         name: json['name'],
         price: json['price'],
         status: json['status'],
-        photoUrl: json['photoUrl'],
+        photoUrl: json['photo_url'],
         customer: json['customer']);
   }
 }
